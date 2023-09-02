@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QTimer>
+#include <QFileDialog>
 
 #include <gst/gst.h>
 #include "workergstreamer.h"
@@ -23,10 +24,13 @@ public:
 
 private slots:
     void clicedPlayButton();
+    void clicedOpenFileButton();
     void clicedStopButton();
     void clicedPauseButton();
     void sliderVideoUpdate();
     void stateUpdateHandler(GstState upState);
+    void soundSliderHandler();
+    void reproductionSliderSliderHandler();
 
 
 private:

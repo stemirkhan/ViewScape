@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>657</height>
+    <height>615</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,30 +37,17 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QSlider" name="soundSlider_2">
+   <widget class="QSlider" name="soundSlider">
     <property name="geometry">
      <rect>
       <x>600</x>
-      <y>520</y>
+      <y>550</y>
       <width>181</width>
       <height>20</height>
      </rect>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="soveButton">
-    <property name="geometry">
-     <rect>
-      <x>600</x>
-      <y>550</y>
-      <width>181</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>SAVE</string>
     </property>
    </widget>
    <widget class="QLabel" name="timeProgressLabel">
@@ -73,7 +60,7 @@
      </rect>
     </property>
     <property name="text">
-     <string/>
+     <string>00:00 / 00:00</string>
     </property>
    </widget>
    <widget class="QWidget" name="">
@@ -134,17 +121,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

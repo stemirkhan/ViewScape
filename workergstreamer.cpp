@@ -3,7 +3,9 @@
 
 WorkerGstreamer::WorkerGstreamer(QObject *parent): QObject(parent)
 {
-    pipeline = gst_parse_launch("playbin uri=https://ftp.nluug.nl/pub/graphics/blender/demo/movies/ToS/tears_of_steel_720p.mov", NULL);
+    pipeline = gst_parse_launch("playbin", NULL);
+    volume = gst_element_factory_make("volume", NULL);
+    videoSink = gst_element_factory_make ("ximagesink", "vsink");
 
     GstBus *bus = gst_element_get_bus(pipeline);
 
@@ -13,37 +15,36 @@ WorkerGstreamer::WorkerGstreamer(QObject *parent): QObject(parent)
 
 void WorkerGstreamer::playVideo()
 {
-    GstState st = GST_STATE_NULL;
-        gst_element_get_state (pipeline, &st, NULL, GST_CLOCK_TIME_NONE);
-        if (st < GST_STATE_PAUSED) {
-            bindWindow();
-        }
+    GstState state = GST_STATE_NULL;
+    gst_element_get_state (pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
+
+    if (state < GST_STATE_PAUSED) {
+        gst_element_set_state(pipeline, GST_STATE_NULL);
+        bindWindow();
+    }
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 }
 
 void WorkerGstreamer::stopVideo()
 {
-    gst_element_set_state (pipeline, GST_STATE_READY);
+    gst_element_set_state(pipeline, GST_STATE_READY);
 }
 
 void WorkerGstreamer::pauseVideo()
 {
-    gst_element_set_state (pipeline, GST_STATE_PAUSED);
+    gst_element_set_state(pipeline, GST_STATE_PAUSED);
 }
 
 void WorkerGstreamer::bindWindow()
 {
-    GstElement *vsink = gst_element_factory_make ("ximagesink", "vsink");
-    gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (vsink), xwinid);
-    g_object_set(GST_OBJECT(pipeline), "video-sink", vsink, NULL);
+    gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(videoSink), xwinid);
+    g_object_set(GST_OBJECT(pipeline), "video-sink", videoSink, NULL);
 }
 
 gint64 WorkerGstreamer::getTotalDuration()
 {
     if (!GST_CLOCK_TIME_IS_VALID(totalDuration)){
         gst_element_query_duration(pipeline, GST_FORMAT_TIME, &totalDuration);
-
-        g_print("%ld \n", totalDuration/GST_SECOND);
     }
 
     return totalDuration/GST_SECOND;
@@ -53,6 +54,23 @@ gint64 WorkerGstreamer::getCurrentTime()
 {
     gst_element_query_position(pipeline, GST_FORMAT_TIME, &currentTime);
     return currentTime/GST_SECOND;
+}
+
+void WorkerGstreamer::setVolume(gdouble sound_volume)
+{
+    g_object_set(GST_OBJECT(pipeline), "volume", (double)sound_volume/100, NULL);
+}
+
+void WorkerGstreamer::setReproduction(gint64 position)
+{
+    gst_element_seek_simple(pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH , position * GST_SECOND);
+}
+
+void WorkerGstreamer::setFileSource(QString fileName)
+{
+    QString allPath = "file://" + fileName;
+    const char *allPathC = allPath.toUtf8().constData();
+    g_object_set(GST_OBJECT(pipeline), "uri", allPathC, NULL);
 }
 
 void WorkerGstreamer::setXwinid(WId xwinid)
@@ -74,17 +92,18 @@ gboolean WorkerGstreamer::messageHandler(GstBus * bus, GstMessage * message, gpo
     }
 
     case GST_MESSAGE_ERROR: {
-        GError *err;
-        gchar *debug_info;
-
-        gst_message_parse_error (message, &err, &debug_info);
-        g_clear_error (&err);
-        g_free (debug_info);
+        GError* error = NULL;
+                    gchar* debug_info = NULL;
+                    gst_message_parse_error(message, &error, &debug_info);
+                    g_printerr("Error received from element %s: %s\n", GST_OBJECT_NAME(message->src), error->message);
+                    g_printerr("Debugging information: %s\n", (debug_info) ? debug_info : "none");
+                    g_error_free(error);
+                    g_free(debug_info);
         break;
     }
 
     case GST_MESSAGE_EOS: {
-        gst_element_set_state (management->pipeline, GST_STATE_NULL);
+        gst_element_set_state(management->pipeline, GST_STATE_NULL);
         break;
     }
 

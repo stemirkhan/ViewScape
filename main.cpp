@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
     WorkerGstreamer *workerGstreamer = new WorkerGstreamer();
     ViewScape *window = new ViewScape(workerGstreamer);
 
+
+    window->setFixedSize(800, 615);
     window->show();
 
 
