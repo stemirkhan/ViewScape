@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QPushButton>
+#include <QTimer>
+
 #include <gst/gst.h>
 #include "workergstreamer.h"
 
@@ -23,9 +25,15 @@ private slots:
     void clicedPlayButton();
     void clicedStopButton();
     void clicedPauseButton();
+    void sliderVideoUpdate();
+    void stateUpdateHandler(GstState upState);
+
 
 private:
     Ui::ViewScape *ui;
     WorkerGstreamer *workerGstreamer;
+    QTimer *playTimer;
+    QString totalDurationTime;
+    QString currentTime;
 };
 #endif // VIEWSCAPE_H
