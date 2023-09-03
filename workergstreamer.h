@@ -27,14 +27,15 @@ public:
 
 signals:
   void updateState(GstState upState);
+  void errorGstreamer(QString textError);
 
 private:
   GstElement *pipeline, *videoSink;
+  GstBus *bus;
   GError* error = NULL;
   gchar* debug_info = NULL;
   void activationEos();
   WId xwinid;
-
   GstState currentState;
   gint64 totalDuration = GST_CLOCK_TIME_NONE;
   gint64 currentTime = GST_CLOCK_TIME_NONE;

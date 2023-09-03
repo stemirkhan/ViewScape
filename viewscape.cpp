@@ -11,6 +11,7 @@ ViewScape::ViewScape(WorkerGstreamer *workerGstreamer):  ui(new Ui::ViewScape), 
     ui->openFileButton->setStyleSheet("background-color: #207A9A;");
     ui->pathFileEdit->setStyleSheet("background-color: #F5FFFA");
     this->setStyleSheet("background-color: #FFFAFA");
+    ui->pathFileEdit->setEnabled(false);
 
 
 
@@ -36,7 +37,9 @@ ViewScape::ViewScape(WorkerGstreamer *workerGstreamer):  ui(new Ui::ViewScape), 
     connect(ui->reproductionSlider , SIGNAL(sliderPressed()), this, SLOT(reproductionPressedSlider()));
     connect(playTimer, SIGNAL(timeout()), this, SLOT(sliderVideoUpdate()));
     connect(workerGstreamer, SIGNAL(updateState(GstState)), this, SLOT(stateUpdateHandler(GstState)));
+    connect(workerGstreamer, SIGNAL(errorGstreamer(QString)), this, SLOT(errorMessageShow(QString)));
 }
+
 
 ViewScape::~ViewScape()
 {
@@ -44,6 +47,7 @@ ViewScape::~ViewScape()
     delete workerGstreamer;
     delete playTimer;
 }
+
 
 void ViewScape::clicedPlayButton(){
     workerGstreamer->playVideo();
@@ -55,10 +59,12 @@ void ViewScape::clicedStopButton()
     workerGstreamer->stopVideo();
 }
 
+
 void ViewScape::clicedPauseButton()
 {
     workerGstreamer->pauseVideo();
 }
+
 
 void ViewScape::clicedVolumeButton()
 {
@@ -77,6 +83,7 @@ void ViewScape::clicedVolumeButton()
 
 }
 
+
 void ViewScape::sliderVideoUpdate()
 {
     ui->reproductionSlider->setValue(workerGstreamer->getCurrentTime());
@@ -85,6 +92,7 @@ void ViewScape::sliderVideoUpdate()
     ui->timeProgressLabel->setText(QString("%1 / %2").arg(currentTime).arg(totalDurationTime));
 
 }
+
 
 void ViewScape::stateUpdateHandler(GstState upState)
 {
@@ -99,21 +107,25 @@ void ViewScape::stateUpdateHandler(GstState upState)
     }
 }
 
+
 void ViewScape::reproductionPressedSlider()
 {
     playTimer->stop();
 }
+
 
 void ViewScape::volumeReleasedSlider()
 {
     workerGstreamer->setVolume(ui->volumeSlider->value());
 }
 
+
 void ViewScape::reproductionReleasedSlider()
 {
     workerGstreamer->setReproduction(ui->reproductionSlider->value());
     playTimer->start(10);
 }
+
 
 void ViewScape::buttonControlState(bool enabledState)
 {
@@ -123,6 +135,7 @@ void ViewScape::buttonControlState(bool enabledState)
     ui->reproductionSlider->setEnabled(enabledState);
 }
 
+
 void ViewScape::setIconButton(QPushButton *buntton, QString pathIcon)
 {
     QIcon icon(pathIcon);
@@ -130,9 +143,22 @@ void ViewScape::setIconButton(QPushButton *buntton, QString pathIcon)
     buntton->setIconSize(QSize(32, 32));
 }
 
+
+void ViewScape::errorMessageShow(QString textError)
+{
+    QMessageBox errorMessage;
+    errorMessage.setIcon(QMessageBox::Critical);
+    errorMessage.setWindowTitle("ERROR");
+    errorMessage.setText(textError);
+    errorMessage.setStandardButtons(QMessageBox::Ok);
+
+    errorMessage.exec();
+}
+
+
 void ViewScape::clicedOpenFileButton()
 {
-    QString filePath = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Видео файлы (*.mp4 *.webm *.avi)");
+    QString filePath = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Видео файлы (*.mp4 *.webm *.avi *.mkv)");
 
     if (!filePath.isEmpty()) {
         ui->pathFileEdit->setText(filePath);

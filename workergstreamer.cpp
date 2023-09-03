@@ -11,16 +11,17 @@ WorkerGstreamer::WorkerGstreamer(QObject *parent): QObject(parent)
     gst_object_unref(bus);
 }
 
+
 WorkerGstreamer::~WorkerGstreamer()
 {
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(pipeline);
-
     gst_object_unref(videoSink);
 
     g_error_free(error);
     g_free(debug_info);
 }
+
 
 void WorkerGstreamer::playVideo()
 {
@@ -36,6 +37,7 @@ void WorkerGstreamer::playVideo()
     }
 }
 
+
 void WorkerGstreamer::stopVideo()
 {
     GstState state = GST_STATE_NULL;
@@ -45,6 +47,7 @@ void WorkerGstreamer::stopVideo()
         gst_element_set_state(pipeline, GST_STATE_READY);
     }
 }
+
 
 void WorkerGstreamer::pauseVideo()
 {
@@ -60,11 +63,13 @@ void WorkerGstreamer::pauseVideo()
     }
 }
 
+
 void WorkerGstreamer::bindWindow()
 {
     gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(videoSink), xwinid);
     g_object_set(GST_OBJECT(pipeline), "video-sink", videoSink, NULL);
 }
+
 
 gint64 WorkerGstreamer::getTotalDuration()
 {
@@ -75,11 +80,13 @@ gint64 WorkerGstreamer::getTotalDuration()
     return totalDuration/GST_SECOND;
 }
 
+
 gint64 WorkerGstreamer::getCurrentTime()
 {
     gst_element_query_position(pipeline, GST_FORMAT_TIME, &currentTime);
     return currentTime/GST_SECOND;
 }
+
 
 void WorkerGstreamer::setVolume(gdouble volume)
 {
@@ -91,6 +98,7 @@ void WorkerGstreamer::setVolume(gdouble volume)
     }
 }
 
+
 void WorkerGstreamer::setReproduction(gint64 position)
 {
     GstState state = GST_STATE_NULL;
@@ -99,11 +107,14 @@ void WorkerGstreamer::setReproduction(gint64 position)
     if(state == GST_STATE_PLAYING) {
         gst_element_seek_simple(pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, position * GST_SECOND);
     }
-
 }
+
 
 void WorkerGstreamer::setFileSource(QString fileName)
 {
+    gst_element_set_state(pipeline, GST_STATE_NULL);
+    totalDuration = GST_CLOCK_TIME_NONE;
+
     QString allPath = "file://" + fileName;
     const char *allPathC = allPath.toUtf8().constData();
     g_object_set(GST_OBJECT(pipeline), "uri", allPathC, NULL);
@@ -130,11 +141,11 @@ gboolean WorkerGstreamer::messageHandler(GstBus * bus, GstMessage * message, gpo
     case GST_MESSAGE_ERROR: {
         gst_message_parse_error(message, &management->error, &management->debug_info);
 
-        g_printerr("Error received from element %s: %s\n", GST_OBJECT_NAME(message->src), management->error->message);
-        g_printerr("Debugging information: %s\n", (management->debug_info) ? management->debug_info : "none");
+        QString errorText = QString("Error received from element %1: %2\n").arg(GST_OBJECT_NAME(message->src)).arg(management->error->message);
+        management->errorGstreamer(errorText);
 
-        g_error_free(management->error);
-        g_free(management->debug_info);
+        gst_element_set_state(management->pipeline, GST_STATE_NULL);
+
         break;
     }
 

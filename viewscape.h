@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QFileDialog>
+#include <QMessageBox>
 
 
 #include <gst/gst.h>
@@ -34,6 +35,7 @@ private slots:
     void volumeReleasedSlider();
     void reproductionReleasedSlider();
     void reproductionPressedSlider();
+    void errorMessageShow(QString textError);
 
 
 private:
