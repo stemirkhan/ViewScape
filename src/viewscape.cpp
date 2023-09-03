@@ -20,11 +20,11 @@ ViewScape::ViewScape(WorkerGstreamer *workerGstreamer):  ui(new Ui::ViewScape), 
     workerGstreamer->bindWindow();
 
     buttonControlState(false);
-    setIconButton(ui->pauseButton, "/home/linux/ViewScape/icon/pause.png");
-    setIconButton(ui->stopButton, "/home/linux/ViewScape/icon/stop.png");
-    setIconButton(ui->playButton, "/home/linux/ViewScape/icon/play.png");
-    setIconButton(ui->expandButton, "/home/linux/ViewScape/icon/expand.png");
-    setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume.png");
+    setIconButton(ui->pauseButton, "../icon/pause.png");
+    setIconButton(ui->stopButton, "../icon/stop.png");
+    setIconButton(ui->playButton, "../icon/play.png");
+    setIconButton(ui->expandButton, "../icon/expand.png");
+    setIconButton(ui->volumeButton, "../icon/volume.png");
 
 
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(clicedPlayButton()));
@@ -72,13 +72,13 @@ void ViewScape::clicedVolumeButton()
         oldVolumeValue = ui->volumeSlider->value();
         workerGstreamer->setVolume(0);
 
-        setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume-mute.png");
+        setIconButton(ui->volumeButton, "../icon/volume-mute.png");
         ui->volumeSlider->setValue(0);
     }
     else {
         ui->volumeSlider->setValue(oldVolumeValue);
         workerGstreamer->setVolume(oldVolumeValue);
-        setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume.png");
+        setIconButton(ui->volumeButton, "../icon/volume.png");
     }
 
 }
@@ -158,7 +158,7 @@ void ViewScape::errorMessageShow(QString textError)
 
 void ViewScape::clicedOpenFileButton()
 {
-    QString filePath = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Видео файлы (*.mp4 *.webm *.avi *.mkv)");
+    QString filePath = QFileDialog::getOpenFileName(this, "Choose ffile", "", "Video file (*.mp4 *.webm *.avi *.mkv)");
 
     if (!filePath.isEmpty()) {
         ui->pathFileEdit->setText(filePath);
