@@ -11,6 +11,7 @@ class WorkerGstreamer: public QObject
    Q_OBJECT
 public:
     explicit WorkerGstreamer(QObject *parent = 0);
+    ~WorkerGstreamer();
     void playVideo();
     void stopVideo();
     void pauseVideo();
@@ -20,7 +21,7 @@ public:
     void setVolume(gdouble sound_volume);
     void setReproduction(gint64 position);
     void setFileSource(QString fileName);
-    void setXwinid(WId xwinid);
+    void setWinid(WId xwinid);
     static gboolean messageHandler(GstBus * bus, GstMessage * message, gpointer user_data);
     void setBusMonitoring();
 
@@ -28,14 +29,15 @@ signals:
   void updateState(GstState upState);
 
 private:
-  GstElement *pipeline = nullptr, *videoSink = nullptr, *volume;
+  GstElement *pipeline, *videoSink;
+  GError* error = NULL;
+  gchar* debug_info = NULL;
+  void activationEos();
+  WId xwinid;
 
-    void activationEos();
-    WId xwinid;
-
-    GstState currentState;
-    gint64 totalDuration = GST_CLOCK_TIME_NONE;
-    gint64 currentTime = GST_CLOCK_TIME_NONE;
+  GstState currentState;
+  gint64 totalDuration = GST_CLOCK_TIME_NONE;
+  gint64 currentTime = GST_CLOCK_TIME_NONE;
 };
 
 #endif // WORKERGSTREAMER_H

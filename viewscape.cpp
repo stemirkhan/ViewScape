@@ -11,10 +11,11 @@ ViewScape::ViewScape(WorkerGstreamer *workerGstreamer)
     ui->soundSlider->setRange(0, 100);
     ui->videoWidget->setStyleSheet("border: 2px solid gren;");
 
+    buttonControl(false);
 
     playTimer = new QTimer();
 
-    workerGstreamer->setXwinid(ui->videoWidget->winId());
+    workerGstreamer->setWinid(ui->videoWidget->winId());
     workerGstreamer->bindWindow();
     workerGstreamer->setVolume(ui->soundSlider->value());
 
@@ -22,8 +23,9 @@ ViewScape::ViewScape(WorkerGstreamer *workerGstreamer)
     connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(clicedStopButton()));
     connect(ui->openFileButton, SIGNAL(clicked()), this, SLOT(clicedOpenFileButton()));
     connect(ui->pauseButton , SIGNAL(clicked()), this, SLOT(clicedPauseButton()));
-    connect(ui->soundSlider , SIGNAL(sliderReleased()), this, SLOT(soundSliderHandler()));
-    connect(ui->reproductionSlider , SIGNAL(sliderReleased()), this, SLOT(reproductionSliderSliderHandler()));
+    connect(ui->soundSlider , SIGNAL(sliderReleased()), this, SLOT(soundReleasedSlider()));
+    connect(ui->reproductionSlider , SIGNAL(sliderReleased()), this, SLOT(reproductionReleasedSlider()));
+    connect(ui->reproductionSlider , SIGNAL(sliderPressed()), this, SLOT(reproductionPressedSlider()));
     connect(playTimer, SIGNAL(timeout()), this, SLOT(sliderVideoUpdate()));
     connect(workerGstreamer, SIGNAL(updateState(GstState)), this, SLOT(stateUpdateHandler(GstState)));
 }
@@ -31,6 +33,8 @@ ViewScape::ViewScape(WorkerGstreamer *workerGstreamer)
 ViewScape::~ViewScape()
 {
     delete ui;
+    delete workerGstreamer;
+    delete playTimer;
 }
 
 void ViewScape::clicedPlayButton(){
@@ -69,14 +73,28 @@ void ViewScape::stateUpdateHandler(GstState upState)
     }
 }
 
-void ViewScape::soundSliderHandler()
+void ViewScape::reproductionPressedSlider()
+{
+    playTimer->stop();
+}
+
+void ViewScape::soundReleasedSlider()
 {
     workerGstreamer->setVolume(ui->soundSlider->value());
 }
 
-void ViewScape::reproductionSliderSliderHandler()
+void ViewScape::reproductionReleasedSlider()
 {
     workerGstreamer->setReproduction(ui->reproductionSlider->value());
+    playTimer->start(10);
+}
+
+void ViewScape::buttonControl(bool enabledState)
+{
+    ui->playButton->setEnabled(enabledState);
+    ui->pauseButton->setEnabled(enabledState);
+    ui->stopButton->setEnabled(enabledState);
+    ui->reproductionSlider->setEnabled(enabledState);
 }
 
 void ViewScape::clicedOpenFileButton()
@@ -86,5 +104,7 @@ void ViewScape::clicedOpenFileButton()
     if (!filePath.isEmpty()) {
         ui->pathFileEdit->setText(filePath);
         workerGstreamer->setFileSource(filePath);
+
+        buttonControl(true);
     }
 }

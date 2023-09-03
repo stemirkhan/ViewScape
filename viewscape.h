@@ -29,8 +29,9 @@ private slots:
     void clicedPauseButton();
     void sliderVideoUpdate();
     void stateUpdateHandler(GstState upState);
-    void soundSliderHandler();
-    void reproductionSliderSliderHandler();
+    void soundReleasedSlider();
+    void reproductionReleasedSlider();
+    void reproductionPressedSlider();
 
 
 private:
@@ -39,5 +40,6 @@ private:
     QTimer *playTimer;
     QString totalDurationTime;
     QString currentTime;
+    void buttonControl(bool enabledState);
 };
 #endif // VIEWSCAPE_H

@@ -4,35 +4,56 @@
 WorkerGstreamer::WorkerGstreamer(QObject *parent): QObject(parent)
 {
     pipeline = gst_parse_launch("playbin", NULL);
-    volume = gst_element_factory_make("volume", NULL);
     videoSink = gst_element_factory_make ("ximagesink", "vsink");
 
     GstBus *bus = gst_element_get_bus(pipeline);
-
     gst_bus_add_watch(bus, &WorkerGstreamer::messageHandler, this);
     gst_object_unref(bus);
+}
+
+WorkerGstreamer::~WorkerGstreamer()
+{
+    gst_element_set_state(pipeline, GST_STATE_NULL);
+    gst_object_unref(pipeline);
+
+    gst_object_unref(videoSink);
+
+    g_error_free(error);
+    g_free(debug_info);
 }
 
 void WorkerGstreamer::playVideo()
 {
     GstState state = GST_STATE_NULL;
-    gst_element_get_state (pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
+    gst_element_get_state(pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
 
-    if (state < GST_STATE_PAUSED) {
+    if(state < GST_STATE_PAUSED){
         gst_element_set_state(pipeline, GST_STATE_NULL);
         bindWindow();
     }
-    gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    if(state != GST_STATE_PLAYING){
+        gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    }
 }
 
 void WorkerGstreamer::stopVideo()
 {
-    gst_element_set_state(pipeline, GST_STATE_READY);
+    GstState state = GST_STATE_NULL;
+    gst_element_get_state(pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
+
+    if(state == GST_STATE_PLAYING || state == GST_STATE_PAUSED) {
+        gst_element_set_state(pipeline, GST_STATE_READY);
+    }
 }
 
 void WorkerGstreamer::pauseVideo()
 {
-    gst_element_set_state(pipeline, GST_STATE_PAUSED);
+    GstState state = GST_STATE_NULL;
+    gst_element_get_state(pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
+
+    if(state == GST_STATE_PLAYING) {
+        gst_element_set_state(pipeline, GST_STATE_PAUSED);
+    }
 }
 
 void WorkerGstreamer::bindWindow()
@@ -63,7 +84,7 @@ void WorkerGstreamer::setVolume(gdouble sound_volume)
 
 void WorkerGstreamer::setReproduction(gint64 position)
 {
-    gst_element_seek_simple(pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH , position * GST_SECOND);
+    gst_element_seek_simple(pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, position * GST_SECOND);
 }
 
 void WorkerGstreamer::setFileSource(QString fileName)
@@ -73,7 +94,7 @@ void WorkerGstreamer::setFileSource(QString fileName)
     g_object_set(GST_OBJECT(pipeline), "uri", allPathC, NULL);
 }
 
-void WorkerGstreamer::setXwinid(WId xwinid)
+void WorkerGstreamer::setWinid(WId xwinid)
 {
     this->xwinid = xwinid;
 }
@@ -92,13 +113,13 @@ gboolean WorkerGstreamer::messageHandler(GstBus * bus, GstMessage * message, gpo
     }
 
     case GST_MESSAGE_ERROR: {
-        GError* error = NULL;
-                    gchar* debug_info = NULL;
-                    gst_message_parse_error(message, &error, &debug_info);
-                    g_printerr("Error received from element %s: %s\n", GST_OBJECT_NAME(message->src), error->message);
-                    g_printerr("Debugging information: %s\n", (debug_info) ? debug_info : "none");
-                    g_error_free(error);
-                    g_free(debug_info);
+        gst_message_parse_error(message, &management->error, &management->debug_info);
+
+        g_printerr("Error received from element %s: %s\n", GST_OBJECT_NAME(message->src), management->error->message);
+        g_printerr("Debugging information: %s\n", (management->debug_info) ? management->debug_info : "none");
+
+        g_error_free(management->error);
+        g_free(management->debug_info);
         break;
     }
 
@@ -110,7 +131,6 @@ gboolean WorkerGstreamer::messageHandler(GstBus * bus, GstMessage * message, gpo
     default:
         break;
     }
-
 
     return TRUE;
 }
