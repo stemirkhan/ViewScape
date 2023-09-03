@@ -6,27 +6,24 @@
 ViewScape::ViewScape(WorkerGstreamer *workerGstreamer):  ui(new Ui::ViewScape), workerGstreamer(workerGstreamer)
 {
     ui->setupUi(this);
-    ui->soundSlider->setRange(0, 100);
+    ui->volumeSlider->setRange(0, 100);
     ui->videoWidget->setStyleSheet("background-color: #000000");
     ui->openFileButton->setStyleSheet("background-color: #207A9A;");
     ui->pathFileEdit->setStyleSheet("background-color: #F5FFFA");
+    this->setStyleSheet("background-color: #FFFAFA");
 
-    QPalette palette = this->palette();
-    palette.setColor(QPalette::Background,  QColor("#FFFAFA"));
-    this->setPalette(palette);
 
-    buttonControl(false);
 
     playTimer = new QTimer();
+    workerGstreamer->setWinid(ui->videoWidget->winId());
+    workerGstreamer->bindWindow();
 
+    buttonControlState(false);
     setIconButton(ui->pauseButton, "/home/linux/ViewScape/icon/pause.png");
     setIconButton(ui->stopButton, "/home/linux/ViewScape/icon/stop.png");
     setIconButton(ui->playButton, "/home/linux/ViewScape/icon/play.png");
     setIconButton(ui->expandButton, "/home/linux/ViewScape/icon/expand.png");
     setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume.png");
-
-    workerGstreamer->setWinid(ui->videoWidget->winId());
-    workerGstreamer->bindWindow();
 
 
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(clicedPlayButton()));
@@ -34,7 +31,7 @@ ViewScape::ViewScape(WorkerGstreamer *workerGstreamer):  ui(new Ui::ViewScape), 
     connect(ui->openFileButton, SIGNAL(clicked()), this, SLOT(clicedOpenFileButton()));
     connect(ui->pauseButton , SIGNAL(clicked()), this, SLOT(clicedPauseButton()));
     connect(ui->volumeButton , SIGNAL(clicked()), this, SLOT(clicedVolumeButton()));
-    connect(ui->soundSlider , SIGNAL(sliderReleased()), this, SLOT(soundReleasedSlider()));
+    connect(ui->volumeSlider , SIGNAL(sliderReleased()), this, SLOT(volumeReleasedSlider()));
     connect(ui->reproductionSlider , SIGNAL(sliderReleased()), this, SLOT(reproductionReleasedSlider()));
     connect(ui->reproductionSlider , SIGNAL(sliderPressed()), this, SLOT(reproductionPressedSlider()));
     connect(playTimer, SIGNAL(timeout()), this, SLOT(sliderVideoUpdate()));
@@ -50,7 +47,7 @@ ViewScape::~ViewScape()
 
 void ViewScape::clicedPlayButton(){
     workerGstreamer->playVideo();
-    workerGstreamer->setVolume(ui->soundSlider->value());
+    workerGstreamer->setVolume(ui->volumeSlider->value());
 }
 
 void ViewScape::clicedStopButton()
@@ -65,15 +62,15 @@ void ViewScape::clicedPauseButton()
 
 void ViewScape::clicedVolumeButton()
 {
-    if (ui->soundSlider->value() != 0){
-        oldVolumeValue = ui->soundSlider->value();
+    if (ui->volumeSlider->value() != 0){
+        oldVolumeValue = ui->volumeSlider->value();
         workerGstreamer->setVolume(0);
 
         setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume-mute.png");
-        ui->soundSlider->setValue(0);
+        ui->volumeSlider->setValue(0);
     }
     else {
-        ui->soundSlider->setValue(oldVolumeValue);
+        ui->volumeSlider->setValue(oldVolumeValue);
         workerGstreamer->setVolume(oldVolumeValue);
         setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume.png");
     }
@@ -107,9 +104,9 @@ void ViewScape::reproductionPressedSlider()
     playTimer->stop();
 }
 
-void ViewScape::soundReleasedSlider()
+void ViewScape::volumeReleasedSlider()
 {
-    workerGstreamer->setVolume(ui->soundSlider->value());
+    workerGstreamer->setVolume(ui->volumeSlider->value());
 }
 
 void ViewScape::reproductionReleasedSlider()
@@ -118,7 +115,7 @@ void ViewScape::reproductionReleasedSlider()
     playTimer->start(10);
 }
 
-void ViewScape::buttonControl(bool enabledState)
+void ViewScape::buttonControlState(bool enabledState)
 {
     ui->playButton->setEnabled(enabledState);
     ui->pauseButton->setEnabled(enabledState);
@@ -141,6 +138,6 @@ void ViewScape::clicedOpenFileButton()
         ui->pathFileEdit->setText(filePath);
         workerGstreamer->setFileSource(filePath);
 
-        buttonControl(true);
+        buttonControlState(true);
     }
 }

@@ -31,7 +31,7 @@ private slots:
     void clicedVolumeButton();
     void sliderVideoUpdate();
     void stateUpdateHandler(GstState upState);
-    void soundReleasedSlider();
+    void volumeReleasedSlider();
     void reproductionReleasedSlider();
     void reproductionPressedSlider();
 
@@ -43,7 +43,7 @@ private:
     QString totalDurationTime;
     QString currentTime;
     qint32 oldVolumeValue;
-    void buttonControl(bool enabledState);
+    void buttonControlState(bool enabledState);
     void setIconButton(QPushButton *buntton, QString pathIcon);
 };
 #endif // VIEWSCAPE_H

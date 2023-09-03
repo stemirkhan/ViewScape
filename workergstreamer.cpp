@@ -81,13 +81,13 @@ gint64 WorkerGstreamer::getCurrentTime()
     return currentTime/GST_SECOND;
 }
 
-void WorkerGstreamer::setVolume(gdouble sound_volume)
+void WorkerGstreamer::setVolume(gdouble volume)
 {
     GstState state = GST_STATE_NULL;
     gst_element_get_state(pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
 
     if(state == GST_STATE_PLAYING) {
-        g_object_set(GST_OBJECT(pipeline), "volume", (double)sound_volume/100, NULL);
+        g_object_set(GST_OBJECT(pipeline), "volume", (double)volume/100, NULL);
     }
 }
 

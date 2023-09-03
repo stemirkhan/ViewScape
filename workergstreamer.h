@@ -18,7 +18,7 @@ public:
     void bindWindow();
     gint64 getTotalDuration();
     gint64 getCurrentTime();
-    void setVolume(gdouble sound_volume);
+    void setVolume(gdouble volume);
     void setReproduction(gint64 position);
     void setFileSource(QString fileName);
     void setWinid(WId xwinid);
