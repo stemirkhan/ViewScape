@@ -3,26 +3,37 @@
 #include <gst/video/videooverlay.h>
 
 
-ViewScape::ViewScape(WorkerGstreamer *workerGstreamer)
-    : workerGstreamer(workerGstreamer)
-    , ui(new Ui::ViewScape)
+ViewScape::ViewScape(WorkerGstreamer *workerGstreamer):  ui(new Ui::ViewScape), workerGstreamer(workerGstreamer)
 {
     ui->setupUi(this);
     ui->soundSlider->setRange(0, 100);
-    ui->videoWidget->setStyleSheet("border: 2px solid gren;");
+    ui->videoWidget->setStyleSheet("background-color: #000000");
+    ui->openFileButton->setStyleSheet("background-color: #207A9A;");
+    ui->pathFileEdit->setStyleSheet("background-color: #F5FFFA");
+
+    QPalette palette = this->palette();
+    palette.setColor(QPalette::Background,  QColor("#FFFAFA"));
+    this->setPalette(palette);
 
     buttonControl(false);
 
     playTimer = new QTimer();
 
+    setIconButton(ui->pauseButton, "/home/linux/ViewScape/icon/pause.png");
+    setIconButton(ui->stopButton, "/home/linux/ViewScape/icon/stop.png");
+    setIconButton(ui->playButton, "/home/linux/ViewScape/icon/play.png");
+    setIconButton(ui->expandButton, "/home/linux/ViewScape/icon/expand.png");
+    setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume.png");
+
     workerGstreamer->setWinid(ui->videoWidget->winId());
     workerGstreamer->bindWindow();
-    workerGstreamer->setVolume(ui->soundSlider->value());
+
 
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(clicedPlayButton()));
     connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(clicedStopButton()));
     connect(ui->openFileButton, SIGNAL(clicked()), this, SLOT(clicedOpenFileButton()));
     connect(ui->pauseButton , SIGNAL(clicked()), this, SLOT(clicedPauseButton()));
+    connect(ui->volumeButton , SIGNAL(clicked()), this, SLOT(clicedVolumeButton()));
     connect(ui->soundSlider , SIGNAL(sliderReleased()), this, SLOT(soundReleasedSlider()));
     connect(ui->reproductionSlider , SIGNAL(sliderReleased()), this, SLOT(reproductionReleasedSlider()));
     connect(ui->reproductionSlider , SIGNAL(sliderPressed()), this, SLOT(reproductionPressedSlider()));
@@ -39,6 +50,7 @@ ViewScape::~ViewScape()
 
 void ViewScape::clicedPlayButton(){
     workerGstreamer->playVideo();
+    workerGstreamer->setVolume(ui->soundSlider->value());
 }
 
 void ViewScape::clicedStopButton()
@@ -49,6 +61,23 @@ void ViewScape::clicedStopButton()
 void ViewScape::clicedPauseButton()
 {
     workerGstreamer->pauseVideo();
+}
+
+void ViewScape::clicedVolumeButton()
+{
+    if (ui->soundSlider->value() != 0){
+        oldVolumeValue = ui->soundSlider->value();
+        workerGstreamer->setVolume(0);
+
+        setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume-mute.png");
+        ui->soundSlider->setValue(0);
+    }
+    else {
+        ui->soundSlider->setValue(oldVolumeValue);
+        workerGstreamer->setVolume(oldVolumeValue);
+        setIconButton(ui->volumeButton, "/home/linux/ViewScape/icon/volume.png");
+    }
+
 }
 
 void ViewScape::sliderVideoUpdate()
@@ -97,9 +126,16 @@ void ViewScape::buttonControl(bool enabledState)
     ui->reproductionSlider->setEnabled(enabledState);
 }
 
+void ViewScape::setIconButton(QPushButton *buntton, QString pathIcon)
+{
+    QIcon icon(pathIcon);
+    buntton->setIcon(icon);
+    buntton->setIconSize(QSize(32, 32));
+}
+
 void ViewScape::clicedOpenFileButton()
 {
-    QString filePath = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Видео файлы (*.mkv *.webm *.avi)");
+    QString filePath = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Видео файлы (*.mp4 *.webm *.avi)");
 
     if (!filePath.isEmpty()) {
         ui->pathFileEdit->setText(filePath);

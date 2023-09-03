@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QFileDialog>
 
+
 #include <gst/gst.h>
 #include "workergstreamer.h"
 
@@ -27,6 +28,7 @@ private slots:
     void clicedOpenFileButton();
     void clicedStopButton();
     void clicedPauseButton();
+    void clicedVolumeButton();
     void sliderVideoUpdate();
     void stateUpdateHandler(GstState upState);
     void soundReleasedSlider();
@@ -40,6 +42,8 @@ private:
     QTimer *playTimer;
     QString totalDurationTime;
     QString currentTime;
+    qint32 oldVolumeValue;
     void buttonControl(bool enabledState);
+    void setIconButton(QPushButton *buntton, QString pathIcon);
 };
 #endif // VIEWSCAPE_H
