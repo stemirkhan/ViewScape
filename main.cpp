@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     ViewScape *window = new ViewScape(workerGstreamer);
 
 
-    window->setFixedSize(800, 615);
+    window->setFixedSize(800, 560);
     window->show();
 
 

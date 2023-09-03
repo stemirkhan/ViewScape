@@ -54,6 +54,10 @@ void WorkerGstreamer::pauseVideo()
     if(state == GST_STATE_PLAYING) {
         gst_element_set_state(pipeline, GST_STATE_PAUSED);
     }
+
+    if(state == GST_STATE_PAUSED) {
+        gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    }
 }
 
 void WorkerGstreamer::bindWindow()
@@ -79,12 +83,23 @@ gint64 WorkerGstreamer::getCurrentTime()
 
 void WorkerGstreamer::setVolume(gdouble sound_volume)
 {
-    g_object_set(GST_OBJECT(pipeline), "volume", (double)sound_volume/100, NULL);
+    GstState state = GST_STATE_NULL;
+    gst_element_get_state(pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
+
+    if(state == GST_STATE_PLAYING) {
+        g_object_set(GST_OBJECT(pipeline), "volume", (double)sound_volume/100, NULL);
+    }
 }
 
 void WorkerGstreamer::setReproduction(gint64 position)
 {
-    gst_element_seek_simple(pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, position * GST_SECOND);
+    GstState state = GST_STATE_NULL;
+    gst_element_get_state(pipeline, &state, NULL, GST_CLOCK_TIME_NONE);
+
+    if(state == GST_STATE_PLAYING) {
+        gst_element_seek_simple(pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, position * GST_SECOND);
+    }
+
 }
 
 void WorkerGstreamer::setFileSource(QString fileName)
